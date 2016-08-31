@@ -92,15 +92,9 @@ public class AKDynamicsProcessor: AKNode, AKToggleable {
         }
     }
 
-    /// Expansion Threshold (rate) ranges from 1 to 50.0 (Default: 2)
-    public var expansionThreshold: Double = 2 {
+    /// Expansion Threshold (dB) (Default: -100)
+    public var expansionThreshold: Double = -100 {
         didSet {
-            if expansionThreshold < 1 {
-                expansionThreshold = 1
-            }
-            if expansionThreshold > 50.0 {
-                expansionThreshold = 50.0
-            }
             AudioUnitSetParameter(
                 internalAU,
                 kDynamicsProcessorParam_ExpansionThreshold,
