@@ -17,7 +17,6 @@ public class AKAudioPlayer: AKNode, AKToggleable {
 
     private var internalAudioFile: AKAudioFile
     private var internalPlayer = AVAudioPlayerNode()
-    private var audioFileBuffer: AVAudioPCMBuffer?
     private var totalFrameCount: UInt32 = 0
     private var startingFrame: UInt32 = 0
     private var endingFrame: UInt32 = 0
@@ -203,7 +202,7 @@ public class AKAudioPlayer: AKNode, AKToggleable {
         AudioKit.engine.connect(internalPlayer, to: mixer, format: format)
         self.avAudioNode = mixer
         internalPlayer.volume = 1.0
-        
+
         initialize()
     }
 
@@ -213,13 +212,9 @@ public class AKAudioPlayer: AKNode, AKToggleable {
     public func start() {
 
         if !playing {
-            if audioFileBuffer != nil {
-                playing = true
-                paused = false
-                internalPlayer.play()
-            } else {
-                print("AKAudioPlayer Warning: cannot play an empty file!...")
-            }
+            playing = true
+            paused = false
+            internalPlayer.play()
         } else {
             print("AKAudioPlayer Warning: already playing!...")
         }
@@ -231,7 +226,6 @@ public class AKAudioPlayer: AKNode, AKToggleable {
             playing = false
             paused = false
             internalPlayer.stop()
-            setPCMBuffer()
             scheduleBuffer()
     }
 
@@ -318,7 +312,6 @@ public class AKAudioPlayer: AKNode, AKToggleable {
 
     private func initialize() {
 
-        audioFileBuffer = nil
         totalFrameCount = UInt32(internalAudioFile.length)
         startingFrame = 0
         endingFrame = totalFrameCount
@@ -330,7 +323,6 @@ public class AKAudioPlayer: AKNode, AKToggleable {
         }
 
         if internalAudioFile.length > 0 {
-            setPCMBuffer()
             scheduleBuffer()
 
         } else {
@@ -339,27 +331,13 @@ public class AKAudioPlayer: AKNode, AKToggleable {
     }
 
     private func scheduleBuffer() {
-        if audioFileBuffer != nil {
-            internalPlayer.scheduleBuffer(audioFileBuffer!, completionHandler: internalCompletionHandler)
-        }
-    }
-
-    private func setPCMBuffer() {
-        if internalAudioFile.samplesCount > 0 {
-           internalAudioFile.framePosition = Int64(startingFrame)
-            framesToPlayCount = endingFrame - startingFrame
-            audioFileBuffer = AVAudioPCMBuffer(
-                PCMFormat: internalAudioFile.processingFormat,
-                frameCapacity: AVAudioFrameCount(totalFrameCount) )
-            do {
-                try internalAudioFile.readIntoBuffer(audioFileBuffer!, frameCount: framesToPlayCount)
-            } catch {
-                print("ERROR AKaudioPlayer: Could not read data into buffer.")
-                return
-            }
-        } else {
-             print("ERROR setPCMBuffer: Could not set PCM buffer -> \(internalAudioFile.fileNamePlusExtension) samplesCount = 0.")
-        }
+        framesToPlayCount = endingFrame - startingFrame
+        internalPlayer.scheduleSegment(
+            internalAudioFile,
+            startingFrame: Int64(startingFrame),
+            frameCount: AVAudioFrameCount(framesToPlayCount),
+            atTime: nil,
+            completionHandler: internalCompletionHandler)
     }
 
     /// Triggered when the player reaches the end of its playing range
