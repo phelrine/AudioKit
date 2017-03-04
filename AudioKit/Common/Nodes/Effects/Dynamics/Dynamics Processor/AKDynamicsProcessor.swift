@@ -42,9 +42,8 @@ open class AKDynamicsProcessor: AKNode, AKToggleable, AUEffect {
     }
 
     /// Expansion Threshold (rate) ranges from 1 to 50.0 (Default: 2)
-    open var expansionThreshold: Double = 2 {
+    open var expansionThreshold: Double = -100 {
         didSet {
-            expansionThreshold = (1...50).clamp(expansionThreshold)
             au[kDynamicsProcessorParam_ExpansionThreshold] = expansionThreshold
         }
     }
