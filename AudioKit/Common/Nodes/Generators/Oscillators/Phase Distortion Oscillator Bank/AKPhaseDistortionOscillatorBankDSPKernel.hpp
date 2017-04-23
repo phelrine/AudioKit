@@ -3,7 +3,7 @@
 //  AudioKit
 //
 //  Created by Aurelius Prochazka, revision history on Github.
-//  Copyright (c) 2016 Aurelius Prochazka. All rights reserved.
+//  Copyright © 2017 Aurelius Prochazka. All rights reserved.
 //
 
 #pragma once
@@ -37,7 +37,7 @@ static inline double noteToHz(int noteNumber)
     return 440. * exp2((noteNumber - 69)/12.);
 }
 
-class AKPhaseDistortionOscillatorBankDSPKernel : public AKSporthKernel, public AKOutputBuffered {
+class AKPhaseDistortionOscillatorBankDSPKernel : public AKSoundpipeKernel, public AKOutputBuffered {
 public:
     // MARK: Types
     struct NoteState {
@@ -167,7 +167,7 @@ public:
     }
 
     void init(int _channels, double _sampleRate) override {
-        AKSporthKernel::init(_channels, _sampleRate);
+        AKSoundpipeKernel::init(_channels, _sampleRate);
 
         attackDurationRamper.init();
         decayDurationRamper.init();
@@ -195,7 +195,7 @@ public:
     }
 
     void destroy() {
-        AKSporthKernel::destroy();
+        AKSoundpipeKernel::destroy();
     }
 
     void reset() {
@@ -246,7 +246,7 @@ public:
     }
 
     void setDetuningMultiplier(float value) {
-        detuningMultiplier = clamp(value, (float)0.5, (float)2.0);
+        detuningMultiplier = value;
         detuningMultiplierRamper.setImmediate(detuningMultiplier);
     }
 
@@ -279,7 +279,7 @@ public:
                 break;
 
             case detuningMultiplierAddress:
-                detuningMultiplierRamper.setUIValue(clamp(value, (float)0.5, (float)2.0));
+                detuningMultiplierRamper.setUIValue(value);
                 break;
 
         }
@@ -341,7 +341,7 @@ public:
                 break;
 
             case detuningMultiplierAddress:
-                detuningMultiplierRamper.startRamp(clamp(value, (float)0.5, (float)2.0), duration);
+                detuningMultiplierRamper.startRamp(value, duration);
                 break;
 
         }
